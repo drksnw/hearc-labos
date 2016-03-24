@@ -76,17 +76,21 @@ public class Main {
     };
 
     public static void main(String[] args) {
-        //For debug purposes, password will always be t3St.
+
+        if(args.length != 2){
+            System.out.println("Usage:\njava -jar labo2.jar <hashed password> <nb concurrent threads>\nExample:\njava -jar labo2.jar "+MD5("titi")+" 4");
+            System.exit(0);
+        } else {
+            String encryptedPw = args[0];
+            BlockingQueue<Thread> baq = new ArrayBlockingQueue<Thread>(Integer.parseInt(args[1]));
+            Producer p = new Producer(baq, encryptedPw);
+            startedTime = System.nanoTime();
+            new Thread(p).start();
+            Consumer c = new Consumer(baq);
+            new Thread(c).start();
+        }
 
 
-
-        String encryptedPw = MD5("1234");
-        BlockingQueue<Thread> baq = new ArrayBlockingQueue<Thread>(8);
-        Producer p = new Producer(baq, encryptedPw);
-        startedTime = System.nanoTime();
-        new Thread(p).start();
-        Consumer c = new Consumer(baq);
-        new Thread(c).start();
 
     }
 
@@ -96,8 +100,7 @@ public class Main {
             byte[] array = md.digest(md5.getBytes());
             StringBuffer sb = new StringBuffer();
             for(int i = 0; i < array.length; ++i){
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 
-0x100).substring(1,3));
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
             }
             return sb.toString();
 
@@ -128,8 +131,7 @@ class BruteForce implements Runnable{
                     String res = Main.MD5(sb.toString());
                     if(res.equals(goal)){
                         Main.found = true;
-                        System.out.println("Found password: 
-"+sb.toString() + " ( "+res+" )");
+                        System.out.println("Found password: "+sb.toString() + " ( "+res+" )");
                     }
                 }
             }
@@ -148,19 +150,21 @@ class Producer implements Runnable {
     public void run(){
 
         try{
-            for(int i = 0; i<Main.possibilities.length && !Main.found; 
-i++){
-                BruteForce b = new BruteForce(Main.possibilities[i], 
-goal);
+            for(int i = 0; i<Main.possibilities.length && !Main.found; i++){
+                BruteForce b = new BruteForce(Main.possibilities[i], goal);
                 Thread t = new Thread(b);
                 t.start();
                 queue.put(t);
             }
             Main.canStopConsumer = true;
             long elapsedTime = System.nanoTime() - Main.startedTime;
+            if(Main.found){
+                System.out.println("Elapsed time : "+(elapsedTime/1000000000.0f)+"s.");
+            } else {
+                System.out.println("No match...");
+                System.out.println("Elapsed time : "+(elapsedTime/1000000000.0f)+"s.");
+            }
 
-            System.out.println("Elapsed time : 
-"+(elapsedTime/1000000000.0f)+"s.");
 
         }catch(InterruptedException ex){
             ex.printStackTrace();
@@ -195,4 +199,3 @@ class Consumer implements Runnable{
 
     }
 }
-
