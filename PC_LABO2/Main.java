@@ -165,6 +165,10 @@ class Producer implements Runnable {
                 System.out.println("Elapsed time : "+(elapsedTime/1000000000.0f)+"s.");
             }
 
+<<<<<<< HEAD
+=======
+            System.out.println("Elapsed time : "+(elapsedTime/1000000000.0f)+"s.");
+>>>>>>> 1ddcb985bb9346f26a3ffda6281ccc33a359536d
 
         }catch(InterruptedException ex){
             ex.printStackTrace();
